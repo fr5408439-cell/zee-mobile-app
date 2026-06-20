@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>ZEE MOBILE – Stock Manager</title>
+<meta name="google-signin-client_id" content="443834307529-31kl095mgv4ps2ata9aminc7uq4h2905.apps.googleusercontent.com">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0B0906;color:#F2EAD8;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;padding-bottom:90px;}
+::-webkit-scrollbar{width:0;height:0;}
+.mono{font-family:'Courier New',monospace;letter-spacing:.5px;}
+input,button,select{font-family:inherit;}
+input::placeholder{color:#6E6452;}
+@keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulseGold{0%,100%{box-shadow:0 0 0 0 rgba(232,198,116,.4)}50%{box-shadow:0 0 0 7px rgba(232,198,116,0)}}
+@keyframes scanline{0%{top:15%}50%{top:78%}100%{top:15%}}
+.anim-up{animation:slideUp .25s ease-out;}
+.anim-fade{animation:fadeIn .2s ease-out;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;z-index:50;}
+.sheet{width:100%;background:#161108;border-top:1px solid #241D14;border-radius:20px 20px 0 0;padding:20px 18px 30px;max-height:92vh;overflow-y:auto;}
+.input-field{width:100%;padding:12px 14px;border-radius:10px;background:#0E0B07;border:1px solid #3A2E1E;color:#F2EAD8;font-size:14px;margin-bottom:14px;outline:none;}
+.btn-gold{width:100%;margin-top:8px;padding:14px 0;border-radius:12px;border:none;background:linear-gradient(135deg,#E8C674,#B8860B);color:#0B0906;font-size:14.5px;font-weight:700;cursor:pointer;}
+.btn-orange{width:100%;margin-top:8px;padding:14px 0;border-radius:12px;border:none;background:linear-gradient(135deg,#F59E0B,#D97706);color:#0B0906;font-size:14.5px;font-weight:700;cursor:pointer;}
+.toggle-wrap{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.toggle{padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid #3A2E1E;background:transparent;color:#9A8F78;transition:all .15s;white-space:nowrap;}
+.toggle.active{border-color:#E8C674;background:rgba(232,198,116,.12);color:#E8C674;}
+.toggle-half{flex:1;padding:10px 0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #3A2E1E;background:transparent;color:#9A8F78;transition:all .15s;}
+.toggle-half.active{border-color:#E8C674;background:rgba(232,198,116,.12);color:#E8C674;}
+.card{background:#161108;border:1px solid #241D14;border-radius:14px;padding:14px 16px;margin-bottom:10px;animation:slideUp .25s ease-out;}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;text-transform:uppercase;}
+.badge-used{background:rgba(96,165,250,.12);color:#60A5FA;}
+.badge-box{background:rgba(232,198,116,.15);color:#E8C674;}
+.badge-pta{background:rgba(52,211,153,.12);color:#34D399;}
+.badge-nonpta{background:rgba(248,113,113,.12);color:#F87171;}
+.badge-acc{background:rgba(167,139,250,.12);color:#A78BFA;}
+.badge-spec{background:rgba(45,212,191,.1);color:#2DD4BF;font-size:9.5px;}
+.field-label{display:flex;align-items:center;gap:6px;margin-bottom:7px;margin-top:4px;font-size:11.5px;color:#9A8F78;font-weight:500;}
+.stat-card{flex:1;background:#161108;border:1px solid #241D14;border-radius:12px;padding:10px 12px;}
+.tab-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 0;border-radius:10px;border:none;cursor:pointer;font-size:12.5px;font-weight:600;background:transparent;color:#6E6452;transition:all .15s;}
+.tab-btn.active{background:#241D10;color:#E8C674;}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid #241D14;background:#161108;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.sell-btn{display:flex;align-items:center;gap:4px;padding:8px 12px;border-radius:9px;border:none;cursor:pointer;background:#241D10;color:#F59E0B;font-size:12px;font-weight:700;white-space:nowrap;}
+.sold-badge{display:flex;align-items:center;gap:4px;padding:8px 12px;border-radius:9px;background:rgba(52,211,153,.1);color:#34D399;font-size:12px;font-weight:700;}
+.scan-btn{min-width:46px;height:46px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#E8C674,#B8860B);display:flex;align-items:center;justify-content:center;}
+#toast{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:200;white-space:nowrap;max-width:90vw;text-align:center;animation:slideUp .2s ease-out;display:none;}
+.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#E8C674,#B8860B);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(212,175,55,.35);animation:pulseGold 2.5s infinite;font-size:28px;color:#0B0906;font-weight:300;}
+.logo-ring{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#E8C674,#B8860B);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 12px 30px rgba(212,175,55,.3);}
+.divider{height:1px;background:#241D14;margin:10px 0;}
+/* Scan overlay */
+#scanOverlay{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column;}
+#scanVideo{width:100%;height:100%;object-fit:cover;}
+.scan-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);width:80%;max-width:320px;aspect-ratio:3/1.2;border-radius:12px;overflow:visible;}
+.scan-corner{position:absolute;width:22px;height:22px;border-color:#E8C674;border-style:solid;border-width:0;}
+.sc-tl{top:0;left:0;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0;}
+.sc-tr{top:0;right:0;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0;}
+.sc-bl{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px;}
+.sc-br{bottom:0;right:0;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0;}
+.scan-laser{position:absolute;left:5%;right:5%;height:2px;background:linear-gradient(90deg,transparent,#E8C674,transparent);animation:scanline 1.8s ease-in-out infinite;}
+.scan-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,60px);color:#F2EAD8;font-size:13px;text-align:center;width:80%;line-height:1.5;}
+.scan-result-box{position:absolute;bottom:0;left:0;right:0;background:rgba(22,17,8,.95);border-top:1px solid #3A2E1E;padding:16px 18px 30px;}
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginPage" style="min-height:100vh;background:radial-gradient(circle at 50% 0%,#1A1410 0%,#0B0906 55%,#050403 100%);display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:380px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div class="logo-ring">
+        <div style="text-align:center;">
+          <div style="font-size:20px;font-weight:900;color:#0B0906;letter-spacing:1px;">ZM</div>
+          <div style="font-size:9px;font-weight:700;color:#0B0906;letter-spacing:2px;margin-top:-3px;">MOBILE</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:3px;margin-bottom:10px;">
+        <div style="width:4px;height:8px;background:#E8C674;border-radius:2px;opacity:.4;"></div>
+        <div style="width:4px;height:12px;background:#E8C674;border-radius:2px;opacity:.6;"></div>
+        <div style="width:4px;height:16px;background:#E8C674;border-radius:2px;opacity:.8;"></div>
+        <div style="width:4px;height:20px;background:#E8C674;border-radius:2px;"></div>
+      </div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:2px;">ZEE MOBILE</div>
+      <div style="font-size:11px;color:#9A8F78;margin-top:4px;letter-spacing:2px;">VIP STOCK MANAGEMENT</div>
+    </div>
+    <div style="background:rgba(26,20,16,.6);border:1px solid #3A2E1E;border-radius:18px;padding:24px 20px;">
+      <div class="field-label" style="color:#C9BD9F;">👤 Username</div>
+      <input id="loginUser" class="input-field" placeholder="zeemobile ya zeestaff" autocomplete="off"/>
+      <div class="field-label" style="color:#C9BD9F;">🔒 Password</div>
+      <div style="position:relative;">
+        <input id="loginPass" type="password" class="input-field" placeholder="Password likhein" style="padding-right:44px;" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <div onclick="togglePassVis()" style="position:absolute;right:14px;top:13px;cursor:pointer;color:#9A8F78;font-size:16px;" id="eyeBtn">👁</div>
+      </div>
+      <div id="loginError" style="color:#F87171;font-size:12.5px;margin-bottom:12px;margin-top:-4px;display:none;"></div>
+      <button class="btn-gold" onclick="doLogin()">Login karein</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin:18px 0;">
+      <div style="flex:1;height:1px;background:#3A2E1E;"></div>
+      <div style="font-size:11px;color:#5C5446;">Google Drive backup ke liye</div>
+      <div style="flex:1;height:1px;background:#3A2E1E;"></div>
+    </div>
+
+    <div id="googleSignInBtn" style="display:flex;justify-content:center;"></div>
+    <div id="googleStatus" style="text-align:center;font-size:11.5px;color:#34D399;margin-top:10px;display:none;"></div>
+
+    <div style="text-align:center;font-size:11px;color:#5C5446;margin-top:18px;">Owner aur staff ke liye alag login</div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp" style="display:none;">
+  <!-- Header -->
+  <div style="padding:20px 18px 16px;border-bottom:1px solid #241D14;background:linear-gradient(180deg,#120F0A 0%,#0B0906 100%);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#E8C674,#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0B0906;font-size:13px;">ZM</div>
+        <div>
+          <div style="font-size:17px;font-weight:800;letter-spacing:.8px;">ZEE MOBILE</div>
+          <div style="font-size:10.5px;color:#9A8F78;display:flex;align-items:center;gap:5px;">
+            <span id="roleDot" style="width:6px;height:6px;border-radius:50%;background:#E8C674;display:inline-block;"></span>
+            <span id="roleLabel">Owner access</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="icon-btn" onclick="openShare()" title="Share stock">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8C674" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+        <button class="icon-btn" id="settingsBtn" onclick="openSettings()" title="Settings">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A8F78" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="icon-btn" onclick="doLogout()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A8F78" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+      <div class="stat-card"><div id="statIn" style="font-size:20px;font-weight:700;color:#E8C674;">0</div><div style="font-size:10.5px;color:#6E6452;margin-top:2px;">In stock</div></div>
+      <div class="stat-card"><div id="statSold" style="font-size:20px;font-weight:700;color:#60A5FA;">0</div><div style="font-size:10.5px;color:#6E6452;margin-top:2px;">Sold total</div></div>
+      <div class="stat-card"><div id="statAll" style="font-size:20px;font-weight:700;color:#F2EAD8;">0</div><div style="font-size:10.5px;color:#6E6452;margin-top:2px;">All time</div></div>
+    </div>
+    <div class="stat-card" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;">
+      <div>
+        <div style="font-size:10.5px;color:#6E6452;">Total purchase payments</div>
+        <div id="statTotalPurchase" style="font-size:18px;font-weight:700;color:#E8C674;margin-top:2px;">Rs 0</div>
+      </div>
+      <div style="font-size:22px;opacity:.7;">💰</div>
+    </div>
+  </div>
+  <!-- Search -->
+  <div style="padding:14px 18px 0;">
+    <div style="display:flex;align-items:center;gap:8px;background:#161108;border:1px solid #241D14;border-radius:12px;padding:10px 14px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6452" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" oninput="renderList()" placeholder="IMEI, model ya customer search..." style="background:transparent;border:none;outline:none;color:#F2EAD8;font-size:14px;flex:1;"/>
+    </div>
+  </div>
+  <!-- Tabs -->
+  <div style="display:flex;gap:6px;padding:14px 18px 4px;">
+    <button class="tab-btn active" id="tabStock" onclick="switchTab('stock')">📦 In Stock</button>
+    <button class="tab-btn" id="tabSold" onclick="switchTab('sold')">✅ Sold</button>
+    <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">🕐 History</button>
+  </div>
+  <div id="listArea" style="padding:10px 18px 20px;"></div>
+  <button class="fab" id="fabBtn" onclick="openAddModal()">+</button>
+</div>
+
+<!-- ========== SCANNER FULLSCREEN ========== -->
+<div id="scanOverlay">
+  <video id="scanVideo" autoplay muted playsinline></video>
+  <!-- Scan frame overlay -->
+  <div class="scan-frame">
+    <div class="scan-corner sc-tl"></div>
+    <div class="scan-corner sc-tr"></div>
+    <div class="scan-corner sc-bl"></div>
+    <div class="scan-corner sc-br"></div>
+    <div class="scan-laser" id="scanLaser"></div>
+  </div>
+  <div class="scan-hint">IMEI barcode ko frame ke andar rakhein<br><span style="font-size:11px;color:#9A8F78;">15 anka aapne aap fill ho jayega</span></div>
+  <!-- Bottom bar -->
+  <div class="scan-result-box">
+    <div style="font-size:12px;color:#9A8F78;margin-bottom:8px;text-align:center;" id="scanStatus">Scanning...</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeScan()" style="flex:1;padding:13px;border-radius:12px;border:1px solid #3A2E1E;background:transparent;color:#9A8F78;font-size:13.5px;font-weight:600;cursor:pointer;">Cancel</button>
+      <button onclick="manualScanDone()" style="flex:2;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#E8C674,#B8860B);color:#0B0906;font-size:13.5px;font-weight:700;cursor:pointer;">Manual IMEI likhein</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ADD MODAL ========== -->
+<div id="addModal" style="display:none;" class="overlay anim-fade" onclick="if(event.target===this)closeAddModal()">
+  <div class="sheet anim-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div style="font-size:16px;font-weight:700;">Naya mobile add karein</div>
+      <span onclick="closeAddModal()" style="cursor:pointer;color:#9A8F78;font-size:20px;">×</span>
+    </div>
+
+    <!-- IMEI 1 -->
+    <div class="field-label">📟 IMEI 1</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input id="newImei1" class="input-field mono" placeholder="15 anka IMEI number" maxlength="15" style="margin-bottom:0;flex:1;" oninput="this.value=this.value.replace(/\D/g,'').slice(0,15)"/>
+      <button class="scan-btn" onclick="openScan('imei1')" title="Scan IMEI 1">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0906" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+      </button>
+    </div>
+
+    <!-- IMEI 2 -->
+    <div class="field-label">📟 IMEI 2 <span style="color:#544C3E;">(dual sim – optional)</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input id="newImei2" class="input-field mono" placeholder="15 anka IMEI number" maxlength="15" style="margin-bottom:0;flex:1;" oninput="this.value=this.value.replace(/\D/g,'').slice(0,15)"/>
+      <button class="scan-btn" onclick="openScan('imei2')" title="Scan IMEI 2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0906" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+      </button>
+    </div>
+
+    <!-- Brand -->
+    <div class="field-label">🏷️ Brand</div>
+    <div class="toggle-wrap" id="brandWrap">
+      <button class="toggle" data-val="Apple" onclick="setBrand('Apple')">Apple</button>
+      <button class="toggle" data-val="Samsung" onclick="setBrand('Samsung')">Samsung</button>
+      <button class="toggle" data-val="Tecno" onclick="setBrand('Tecno')">Tecno</button>
+      <button class="toggle" data-val="Infinix" onclick="setBrand('Infinix')">Infinix</button>
+      <button class="toggle" data-val="Itel" onclick="setBrand('Itel')">Itel</button>
+      <button class="toggle" data-val="other" onclick="setBrand('other')">Other ✏️</button>
+    </div>
+    <input id="brandOtherInput" class="input-field" placeholder="Brand ka naam likhein..." style="display:none;margin-top:-6px;"/>
+
+    <!-- Model -->
+    <div class="field-label">📱 Model</div>
+    <input id="newModel" class="input-field" placeholder="e.g. A14, iPhone 11, Pop 7 Pro"/>
+
+    <!-- Type -->
+    <div class="field-label">📦 Type</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="toggle-half active" id="typeUsed" onclick="setType('used')">Used</button>
+      <button class="toggle-half" id="typeBox" onclick="setType('box pack')">Box Pack</button>
+    </div>
+
+    <!-- Accessories – used only -->
+    <div id="accSection">
+      <div class="field-label">🎁 Sath kya hai?</div>
+      <div class="toggle-wrap">
+        <button class="toggle" id="accBoxCharger" onclick="toggleAcc('boxCharger')">Box + Charger</button>
+        <button class="toggle" id="accBox" onclick="toggleAcc('box')">Sirf Box</button>
+        <button class="toggle" id="accCharger" onclick="toggleAcc('charger')">Sirf Charger</button>
+        <button class="toggle" id="accNone" onclick="toggleAcc('noAcc')">Kuch nahi</button>
+      </div>
+    </div>
+
+    <!-- RAM -->
+    <div class="field-label">💾 RAM</div>
+    <div class="toggle-wrap" id="ramWrap">
+      <button class="toggle" data-val="2GB" onclick="setSpec('ram','2GB')">2 GB</button>
+      <button class="toggle" data-val="3GB" onclick="setSpec('ram','3GB')">3 GB</button>
+      <button class="toggle" data-val="4GB" onclick="setSpec('ram','4GB')">4 GB</button>
+      <button class="toggle" data-val="6GB" onclick="setSpec('ram','6GB')">6 GB</button>
+      <button class="toggle" data-val="8GB" onclick="setSpec('ram','8GB')">8 GB</button>
+      <button class="toggle" data-val="12GB" onclick="setSpec('ram','12GB')">12 GB</button>
+    </div>
+
+    <!-- Storage -->
+    <div class="field-label">🗂️ Storage</div>
+    <div class="toggle-wrap" id="storageWrap">
+      <button class="toggle" data-val="16GB" onclick="setSpec('storage','16GB')">16 GB</button>
+      <button class="toggle" data-val="32GB" onclick="setSpec('storage','32GB')">32 GB</button>
+      <button class="toggle" data-val="64GB" onclick="setSpec('storage','64GB')">64 GB</button>
+      <button class="toggle" data-val="128GB" onclick="setSpec('storage','128GB')">128 GB</button>
+      <button class="toggle" data-val="256GB" onclick="setSpec('storage','256GB')">256 GB</button>
+      <button class="toggle" data-val="512GB" onclick="setSpec('storage','512GB')">512 GB</button>
+    </div>
+
+    <!-- PTA -->
+    <div class="field-label">🛡️ PTA Status</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="toggle-half active" id="ptaYes" onclick="setPta('pta')">✓ PTA</button>
+      <button class="toggle-half" id="ptaNo" onclick="setPta('non-pta')">✕ Non-PTA</button>
+    </div>
+
+    <!-- Prices -->
+    <div class="field-label">💰 Purchase price (Rs)</div>
+    <input id="newPurchasePrice" class="input-field" type="number" placeholder="e.g. 25000"/>
+
+    <div class="field-label">💵 Sell price (Rs) <span style="color:#544C3E;">– optional</span></div>
+    <input id="newSellPrice" class="input-field" type="number" placeholder="e.g. 28000"/>
+
+    <button class="btn-gold" onclick="doAddPhone()">✅ Stock mein add karein</button>
+  </div>
+</div>
+
+<!-- ========== SELL MODAL ========== -->
+<div id="sellModal" style="display:none;" class="overlay anim-fade" onclick="if(event.target===this)closeSellModal()">
+  <div class="sheet anim-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div style="font-size:16px;font-weight:700;">Mobile sell karein</div>
+      <span onclick="closeSellModal()" style="cursor:pointer;color:#9A8F78;font-size:20px;">×</span>
+    </div>
+    <div id="sellPhoneInfo" style="font-size:13px;color:#9A8F78;margin-bottom:16px;"></div>
+    <div class="field-label">💵 Sale price (Rs)</div>
+    <input id="sellPrice" class="input-field" type="number" placeholder="e.g. 28000"/>
+    <div class="field-label">👤 Customer name</div>
+    <input id="sellCustomerName" class="input-field" placeholder="e.g. Ahmed Khan"/>
+    <div class="field-label">📞 Customer number</div>
+    <input id="sellCustomerPhone" class="input-field" placeholder="e.g. 03001234567"/>
+    <button class="btn-orange" onclick="doSell()">Sold mark karein</button>
+  </div>
+</div>
+
+<!-- ========== SHARE MODAL ========== -->
+<div id="shareModal" style="display:none;" class="overlay anim-fade" onclick="if(event.target===this)closeShare()">
+  <div class="sheet anim-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="font-size:16px;font-weight:700;">Stock list share karein</div>
+      <span onclick="closeShare()" style="cursor:pointer;color:#9A8F78;font-size:20px;">×</span>
+    </div>
+    <div style="font-size:12.5px;color:#9A8F78;margin-bottom:14px;line-height:1.5;">Sirf maujooda stock share hogi — sell ya history shamil nahi.</div>
+    <div id="sharePreview" class="mono" style="background:#161108;border:1px solid #241D14;border-radius:12px;padding:14px;font-size:12px;color:#C9BD9F;white-space:pre-wrap;max-height:240px;overflow-y:auto;margin-bottom:16px;"></div>
+    <button class="btn-gold" onclick="doShare()">📤 Share / Copy karein</button>
+  </div>
+</div>
+
+<!-- ========== SETTINGS / PASSWORD MODAL ========== -->
+<div id="settingsModal" style="display:none;" class="overlay anim-fade" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet anim-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="font-size:16px;font-weight:700;">⚙️ Settings — Password change</div>
+      <span onclick="closeSettings()" style="cursor:pointer;color:#9A8F78;font-size:20px;">×</span>
+    </div>
+    <div style="font-size:12px;color:#9A8F78;margin-bottom:16px;line-height:1.5;">
+      Apna naya password set karein. Username wahi rahega: <b style="color:#E8C674;" id="settingsCurrentUser"></b>
+    </div>
+
+    <div class="field-label">🔒 Current password</div>
+    <input id="curPassInput" type="password" class="input-field" placeholder="Maujooda password"/>
+
+    <div class="field-label">🔑 New password</div>
+    <input id="newPassInput" type="password" class="input-field" placeholder="Naya password (kam az kam 4 anka)"/>
+
+    <div class="field-label">🔑 Naya password dobara likhein</div>
+    <input id="confirmPassInput" type="password" class="input-field" placeholder="Naya password confirm karein"/>
+
+    <div id="settingsError" style="color:#F87171;font-size:12.5px;margin-bottom:10px;display:none;"></div>
+    <div id="settingsSuccess" style="color:#34D399;font-size:12.5px;margin-bottom:10px;display:none;"></div>
+
+    <button class="btn-gold" onclick="changePassword()">✅ Password update karein</button>
+
+    <div class="divider" style="margin:20px 0;"></div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:6px;">📦 Backup — Data transfer</div>
+    <div style="font-size:12px;color:#9A8F78;margin-bottom:14px;line-height:1.5;">
+      Naya phone le rahe hain? Pehle is phone se "Export" karein, phir naye phone mein file kholein aur "Import" karein — sara stock data wahan chala jayega.
+    </div>
+    <button onclick="exportBackup()" style="width:100%;padding:13px 0;border-radius:12px;border:1px solid #3A2E1E;background:#1A1610;color:#E8C674;font-size:13.5px;font-weight:700;cursor:pointer;margin-bottom:10px;">⬇️ Export Backup (file download)</button>
+    <label style="display:block;width:100%;padding:13px 0;border-radius:12px;border:1px solid #3A2E1E;background:#1A1610;color:#60A5FA;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;">
+      ⬆️ Import Backup (file select)
+      <input type="file" accept=".json" onchange="importBackup(event)" style="display:none;"/>
+    </label>
+    <div id="backupMsg" style="font-size:12px;margin-top:10px;display:none;"></div>
+
+    <div class="divider" style="margin:20px 0;"></div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:6px;">☁️ Google Drive Auto-Sync</div>
+    <div style="font-size:12px;color:#9A8F78;margin-bottom:12px;line-height:1.5;">
+      Agar Google se connect hain, data automatically Drive mein save hota rehta hai — naye phone mein wahi Gmail se sign in karein, data khud aa jayega.
+    </div>
+    <div id="settingsGoogleStatus" style="font-size:12px;color:#34D399;margin-bottom:10px;"></div>
+    <button onclick="disconnectGoogle()" style="width:100%;padding:12px 0;border-radius:12px;border:1px solid #3A2E1E;background:transparent;color:#9A8F78;font-size:13px;font-weight:600;cursor:pointer;">Google Drive disconnect karein</button>
+  </div>
+</div>
+
+<!-- ========== EDIT MODAL ========== -->
+<div id="editModal" style="display:none;" class="overlay anim-fade" onclick="if(event.target===this)closeEditModal()">
+  <div class="sheet anim-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div style="font-size:16px;font-weight:700;">✏️ Mobile edit karein</div>
+      <span onclick="closeEditModal()" style="cursor:pointer;color:#9A8F78;font-size:20px;">×</span>
+    </div>
+
+    <div class="field-label">📟 IMEI 1</div>
+    <input id="editImei1" class="input-field mono" maxlength="15" oninput="this.value=this.value.replace(/\D/g,'').slice(0,15)"/>
+
+    <div class="field-label">📟 IMEI 2 <span style="color:#544C3E;">(optional)</span></div>
+    <input id="editImei2" class="input-field mono" maxlength="15" oninput="this.value=this.value.replace(/\D/g,'').slice(0,15)"/>
+
+    <div class="field-label">🏷️ Brand</div>
+    <div class="toggle-wrap" id="editBrandWrap">
+      <button class="toggle" data-val="Apple" onclick="setEditBrand('Apple')">Apple</button>
+      <button class="toggle" data-val="Samsung" onclick="setEditBrand('Samsung')">Samsung</button>
+      <button class="toggle" data-val="Tecno" onclick="setEditBrand('Tecno')">Tecno</button>
+      <button class="toggle" data-val="Infinix" onclick="setEditBrand('Infinix')">Infinix</button>
+      <button class="toggle" data-val="Itel" onclick="setEditBrand('Itel')">Itel</button>
+      <button class="toggle" data-val="other" onclick="setEditBrand('other')">Other ✏️</button>
+    </div>
+    <input id="editBrandOtherInput" class="input-field" placeholder="Brand ka naam likhein..." style="display:none;margin-top:-6px;"/>
+
+    <div class="field-label">📱 Model</div>
+    <input id="editModelInput" class="input-field" placeholder="e.g. A14, iPhone 11"/>
+
+    <div class="field-label">📦 Type</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="toggle-half" id="editTypeUsed" onclick="setEditType('used')">Used</button>
+      <button class="toggle-half" id="editTypeBox" onclick="setEditType('box pack')">Box Pack</button>
+    </div>
+
+    <div id="editAccSection">
+      <div class="field-label">🎁 Sath kya hai?</div>
+      <div class="toggle-wrap">
+        <button class="toggle" id="editAccBoxCharger" onclick="toggleEditAcc('boxCharger')">Box + Charger</button>
+        <button class="toggle" id="editAccBox" onclick="toggleEditAcc('box')">Sirf Box</button>
+        <button class="toggle" id="editAccCharger" onclick="toggleEditAcc('charger')">Sirf Charger</button>
+        <button class="toggle" id="editAccNoAcc" onclick="toggleEditAcc('noAcc')">Kuch nahi</button>
+      </div>
+    </div>
+
+    <div class="field-label">💾 RAM</div>
+    <div class="toggle-wrap" id="editRamWrap">
+      <button class="toggle" data-val="2GB" onclick="setEditSpec('ram','2GB')">2 GB</button>
+      <button class="toggle" data-val="3GB" onclick="setEditSpec('ram','3GB')">3 GB</button>
+      <button class="toggle" data-val="4GB" onclick="setEditSpec('ram','4GB')">4 GB</button>
+      <button class="toggle" data-val="6GB" onclick="setEditSpec('ram','6GB')">6 GB</button>
+      <button class="toggle" data-val="8GB" onclick="setEditSpec('ram','8GB')">8 GB</button>
+      <button class="toggle" data-val="12GB" onclick="setEditSpec('ram','12GB')">12 GB</button>
+    </div>
+
+    <div class="field-label">🗂️ Storage</div>
+    <div class="toggle-wrap" id="editStorageWrap">
+      <button class="toggle" data-val="16GB" onclick="setEditSpec('storage','16GB')">16 GB</button>
+      <button class="toggle" data-val="32GB" onclick="setEditSpec('storage','32GB')">32 GB</button>
+      <button class="toggle" data-val="64GB" onclick="setEditSpec('storage','64GB')">64 GB</button>
+      <button class="toggle" data-val="128GB" onclick="setEditSpec('storage','128GB')">128 GB</button>
+      <button class="toggle" data-val="256GB" onclick="setEditSpec('storage','256GB')">256 GB</button>
+      <button class="toggle" data-val="512GB" onclick="setEditSpec('storage','512GB')">512 GB</button>
+    </div>
+
+    <div class="field-label">🛡️ PTA Status</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="toggle-half" id="editPtaYes" onclick="setEditPta('pta')">✓ PTA</button>
+      <button class="toggle-half" id="editPtaNo" onclick="setEditPta('non-pta')">✕ Non-PTA</button>
+    </div>
+
+    <div class="field-label">💰 Purchase price (Rs)</div>
+    <input id="editPurchasePrice" class="input-field" type="number"/>
+
+    <div class="field-label">💵 Sell price (Rs) <span style="color:#544C3E;">– optional</span></div>
+    <input id="editSellPrice" class="input-field" type="number"/>
+
+    <button class="btn-gold" onclick="saveEditPhone()">✅ Changes save karein</button>
+    <button onclick="closeEditModal()" style="width:100%;margin-top:10px;padding:13px 0;border-radius:12px;border:1px solid #3A2E1E;background:transparent;color:#9A8F78;font-size:13.5px;font-weight:600;cursor:pointer;">Cancel</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  CONFIG
+// ============================================================
+const DEFAULT_CREDS = { zeemobile:'zeemobile786', zeestaff:'zeestaff786' };
+const ROLES  = { zeemobile:'owner', zeestaff:'staff' };
+let CREDS = {};
+function loadCreds(){
+  try{
+    const saved=localStorage.getItem('zee-creds');
+    CREDS = saved ? JSON.parse(saved) : {...DEFAULT_CREDS};
+  }catch(e){ CREDS = {...DEFAULT_CREDS}; }
+}
+function saveCreds(){ try{ localStorage.setItem('zee-creds', JSON.stringify(CREDS)); }catch(e){} }
+loadCreds();
+let currentUsername = null;
+const ACC_MAP = { boxCharger:'Box+Charger', box:'Sirf Box', charger:'Sirf Charger', noAcc:'Kuch nahi', '':'' };
+
+// ============================================================
+//  GOOGLE DRIVE BACKUP (auto sync)
+// ============================================================
+const GOOGLE_CLIENT_ID = '443834307529-31kl095mgv4ps2ata9aminc7uq4h2905.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_BACKUP_FILENAME = 'zee-mobile-backup.json';
+let googleAccessToken = null;
+let googleUserEmail = null;
+let driveFileId = null;
+let tokenClient = null;
+let driveSyncTimer = null;
+
+function initGoogleSignIn(){
+  if(!window.google || !window.google.accounts) { setTimeout(initGoogleSignIn, 500); return; }
+  try{
+    showDebug('initGoogleSignIn() running, google.accounts found');
+    // Render the "Sign in with Google" button (identity, just to capture email)
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleIdentity
+    });
+    showDebug('google.accounts.id.initialize() done');
+    const btnDiv = document.getElementById('googleSignInBtn');
+    showDebug('googleSignInBtn div found: '+(!!btnDiv));
+    if(btnDiv){
+      google.accounts.id.renderButton(btnDiv, { theme:'filled_black', size:'large', shape:'pill', text:'continue_with' });
+      showDebug('renderButton() called, btnDiv innerHTML length: '+btnDiv.innerHTML.length);
+    }
+    // Token client for Drive API access (separate from identity)
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: (resp)=>{
+        if(resp && resp.access_token){
+          googleAccessToken = resp.access_token;
+          try{ sessionStorage.setItem('zee-gdrive-token', googleAccessToken); }catch(e){}
+          onDriveAuthorized();
+        }
+      }
+    });
+    showDebug('tokenClient initialized OK');
+  }catch(e){
+    showDebug('EXCEPTION in initGoogleSignIn: '+e.message);
+  }
+  // Restore previous session token if still valid (best-effort)
+  try{
+    const savedEmail = localStorage.getItem('zee-google-email');
+    if(savedEmail){
+      googleUserEmail = savedEmail;
+      showGoogleStatus(`Pehle se connected: ${savedEmail}`);
+    }
+  }catch(e){}
+}
+
+function handleGoogleIdentity(response){
+  try{
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    googleUserEmail = payload.email;
+    localStorage.setItem('zee-google-email', googleUserEmail);
+    showGoogleStatus(`Sign in ho gaya: ${googleUserEmail} — Drive access maang rahe hain...`);
+  }catch(e){}
+  // Now request Drive access token
+  if(tokenClient) tokenClient.requestAccessToken();
+}
+
+function showGoogleStatus(msg){
+  const el = document.getElementById('googleStatus');
+  if(el){ el.textContent = msg; el.style.display='block'; }
+}
+
+async function onDriveAuthorized(){
+  showGoogleStatus(`Connected: ${googleUserEmail||''} — Drive se data load ho raha hai...`);
+  try{
+    await driveFindOrCreateFile();
+    await driveDownloadAndMerge();
+    showGoogleStatus(`✓ Google Drive sync ON (${googleUserEmail||''})`);
+    showToast('Google Drive backup connect ho gaya ✓');
+    startAutoSync();
+  }catch(e){
+    showGoogleStatus('Drive sync mein masla hua — dobara try karein');
+  }
+}
+
+async function driveApiFetch(url, opts={}){
+  opts.headers = Object.assign({}, opts.headers, { 'Authorization': 'Bearer '+googleAccessToken });
+  const res = await fetch(url, opts);
+  if(res.status===401){ throw new Error('token_expired'); }
+  return res;
+}
+
+async function driveFindOrCreateFile(){
+  // Search appDataFolder for our backup file
+  const listRes = await driveApiFetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${DRIVE_BACKUP_FILENAME}'&fields=files(id,name)`
+  );
+  const listData = await listRes.json();
+  if(listData.files && listData.files.length>0){
+    driveFileId = listData.files[0].id;
+  } else {
+    // Create new empty backup file
+    const createRes = await driveApiFetch('https://www.googleapis.com/drive/v3/files', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: DRIVE_BACKUP_FILENAME, parents:['appDataFolder'] })
+    });
+    const createData = await createRes.json();
+    driveFileId = createData.id;
+    await driveUploadContent({app:'ZEE_MOBILE_BACKUP', version:1, stock:[]});
+  }
+}
+
+async function driveDownloadAndMerge(){
+  if(!driveFileId) return;
+  const res = await driveApiFetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`);
+  const text = await res.text();
+  if(!text) return;
+  try{
+    const data = JSON.parse(text);
+    if(data && Array.isArray(data.stock) && data.stock.length>0){
+      // Merge: combine drive data with local, avoid duplicate IDs
+      const existingIds = new Set(stock.map(p=>p.id));
+      const newFromDrive = data.stock.filter(p=>!existingIds.has(p.id));
+      if(newFromDrive.length>0){
+        stock = [...newFromDrive, ...stock];
+        saveStock(); updateStats(); renderList();
+      }
+    }
+  }catch(e){}
+}
+
+async function driveUploadContent(backupObj){
+  if(!driveFileId) return;
+  await driveApiFetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(backupObj)
+  });
+}
+
+function startAutoSync(){
+  clearInterval(driveSyncTimer);
+  driveSyncTimer = setInterval(syncToDrive, 15000); // every 15s if there are changes
+}
+
+let lastSyncedSnapshot = '';
+async function syncToDrive(){
+  if(!googleAccessToken || !driveFileId) return;
+  const snapshot = JSON.stringify(stock);
+  if(snapshot === lastSyncedSnapshot) return; // nothing changed
+  try{
+    await driveUploadContent({app:'ZEE_MOBILE_BACKUP', version:1, stock, syncedAt:new Date().toISOString()});
+    lastSyncedSnapshot = snapshot;
+  }catch(e){
+    if(e.message==='token_expired' && tokenClient){ tokenClient.requestAccessToken(); }
+  }
+}
+
+function disconnectGoogle(){
+  googleAccessToken=null; googleUserEmail=null; driveFileId=null;
+  clearInterval(driveSyncTimer);
+  try{ localStorage.removeItem('zee-google-email'); sessionStorage.removeItem('zee-gdrive-token'); }catch(e){}
+  showGoogleStatus('');
+  document.getElementById('googleStatus').style.display='none';
+  showToast('Google Drive disconnect ho gaya');
+}
+
+window.addEventListener('load', initGoogleSignIn);
+
+// ============================================================
+//  TEMP DEBUG PANEL (visible on screen, remove later)
+// ============================================================
+function showDebug(msg){
+  let panel = document.getElementById('debugPanel');
+  if(!panel){
+    panel = document.createElement('div');
+    panel.id='debugPanel';
+    panel.style.position='fixed';
+    panel.style.bottom='0';
+    panel.style.left='0';
+    panel.style.right='0';
+    panel.style.maxHeight='40vh';
+    panel.style.overflowY='auto';
+    panel.style.background='rgba(0,0,0,0.92)';
+    panel.style.color='#0f0';
+    panel.style.fontSize='10px';
+    panel.style.fontFamily='monospace';
+    panel.style.padding='8px';
+    panel.style.zIndex='99999';
+    panel.style.borderTop='2px solid #E8C674';
+    document.body.appendChild(panel);
+  }
+  const line=document.createElement('div');
+  line.textContent = '> '+msg;
+  line.style.borderBottom='1px solid #333';
+  line.style.padding='3px 0';
+  panel.appendChild(line);
+}
+window.onerror = function(msg, url, line, col, error){
+  showDebug('ERROR: '+msg+' (line '+line+')');
+  return false;
+};
+showDebug('Page loaded. Waiting for Google script...');
+let debugCheckCount=0;
+const debugInterval = setInterval(()=>{
+  debugCheckCount++;
+  if(window.google && window.google.accounts){
+    showDebug('✓ window.google.accounts IS available (after '+(debugCheckCount*0.5)+'s)');
+    clearInterval(debugInterval);
+  } else if(debugCheckCount>20){
+    showDebug('✗ window.google.accounts NEVER loaded after 10s — script blocked or failed');
+    clearInterval(debugInterval);
+  }
+}, 500);
+
+let currentRole = null;
+let stock = [];
+let currentView = 'stock';
+let sellTarget = null;
+let scanTarget = 'imei1';
+let scanStream = null;
+let barcodeDetector = null;
+let scanInterval = null;
+// form state
+let selType = 'used', selPta = 'pta', selAcc = '', selRam = '', selStorage = '', selBrand = '';
+
+// ============================================================
+//  STORAGE
+// ============================================================
+function saveStock(){ try{ localStorage.setItem('zee-stock-v2', JSON.stringify(stock)); }catch(e){} if(googleAccessToken) syncToDrive(); }
+function loadStockData(){ try{ const d=localStorage.getItem('zee-stock-v2'); if(d) stock=JSON.parse(d); }catch(e){ stock=[]; } }
+
+// ============================================================
+//  LOGIN
+// ============================================================
+function togglePassVis(){
+  const el=document.getElementById('loginPass');
+  el.type = el.type==='password'?'text':'password';
+}
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim().toLowerCase();
+  const p=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginError');
+  if(!CREDS[u]){ err.textContent='Username ghalat. "zeemobile" ya "zeestaff" likhein.'; err.style.display='block'; return; }
+  if(CREDS[u]!==p){ err.textContent='Password ghalat hai.'; err.style.display='block'; return; }
+  err.style.display='none';
+  currentRole=ROLES[u];
+  currentUsername=u;
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('roleLabel').textContent = currentRole==='owner'?'Owner access':'Staff (view only)';
+  document.getElementById('roleDot').style.background = currentRole==='owner'?'#E8C674':'#60A5FA';
+  document.getElementById('fabBtn').style.display = currentRole==='owner'?'flex':'none';
+  loadStockData(); updateStats(); renderList();
+}
+function doLogout(){
+  currentRole=null; currentUsername=null; stock=[];
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+// ============================================================
+//  TABS + STATS
+// ============================================================
+function switchTab(tab){
+  currentView=tab;
+  ['stock','sold','history'].forEach(t=>{
+    const el=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el) el.classList.toggle('active',t===tab);
+  });
+  renderList();
+}
+function updateStats(){
+  document.getElementById('statIn').textContent   = stock.filter(p=>p.status==='in').length;
+  document.getElementById('statSold').textContent = stock.filter(p=>p.status==='out').length;
+  document.getElementById('statAll').textContent  = stock.length;
+  const totalPurchase = stock.reduce((sum,p)=>sum+(Number(p.purchasePrice)||0),0);
+  document.getElementById('statTotalPurchase').textContent = fmtMoney(totalPurchase);
+}
+
+// ============================================================
+//  RENDER
+// ============================================================
+function fmtDate(iso){ if(!iso) return '-'; return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtMoney(v){ if(!v) return '-'; const n=Number(v); return isNaN(n)?v:'Rs '+n.toLocaleString('en-PK'); }
+
+function filterStock(list){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+  if(!q) return list;
+  return list.filter(p=>
+    p.imei1.includes(q)||(p.imei2||'').includes(q)||
+    p.model.toLowerCase().includes(q)||
+    (p.sale&&p.sale.customerName&&p.sale.customerName.toLowerCase().includes(q))
+  );
+}
+
+function renderList(){
+  const area=document.getElementById('listArea');
+  const inS=stock.filter(p=>p.status==='in');
+  const sold=stock.filter(p=>p.status==='out');
+  let list, emptyMsg;
+  if(currentView==='history'){ list=filterStock([...stock].sort((a,b)=>new Date(b.dateIn)-new Date(a.dateIn))); emptyMsg='Abhi koi history nahi hai'; }
+  else if(currentView==='stock'){ list=filterStock(inS); emptyMsg='Stock khali hai, mobile add karein'; }
+  else { list=filterStock(sold); emptyMsg='Abhi koi mobile sell nahi hua'; }
+
+  if(!list.length){
+    area.innerHTML=`<div style="text-align:center;padding:70px 20px;color:#544C3E;"><div style="font-size:40px;opacity:.4;margin-bottom:12px;">📱</div><div style="font-size:13.5px;">${emptyMsg}</div></div>`;
+    return;
+  }
+  area.innerHTML = list.map(item=>{
+    const typeBadge = item.type==='used'?'<span class="badge badge-used">Used</span>':'<span class="badge badge-box">Box Pack</span>';
+    const ptaBadge  = item.pta==='pta'?'<span class="badge badge-pta">✓ PTA</span>':'<span class="badge badge-nonpta">✕ Non-PTA</span>';
+    const accBadge  = (item.type==='used'&&item.acc)?`<span class="badge badge-acc">${ACC_MAP[item.acc]||item.acc}</span>`:'';
+    const specBadge = [item.ram, item.storage].filter(Boolean).map(s=>`<span class="badge badge-spec">${s}</span>`).join('');
+    const imeiLine  = item.imei1+(item.imei2?' / '+item.imei2:'');
+    let priceInfo   = `<span>${fmtMoney(item.purchasePrice)}</span>`;
+    if(item.sellPrice) priceInfo+=` <span style="color:#34D399;font-size:11px;">→ ${fmtMoney(item.sellPrice)}</span>`;
+
+    let actionBtn='';
+    if(item.status==='in'){
+      actionBtn = currentRole==='owner'
+        ?`<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button class="sell-btn" onclick="openSellModal('${item.id}')">↗ Sell</button>
+            <button onclick="openEditModal('${item.id}')" style="display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:9px;border:none;cursor:pointer;background:#1A1610;color:#9A8F78;font-size:11px;font-weight:600;white-space:nowrap;">✏️ Edit</button>
+          </div>`
+        :`<div style="padding:8px 12px;border-radius:9px;background:rgba(232,198,116,.08);color:#E8C674;font-size:11.5px;font-weight:600;">In stock</div>`;
+    } else {
+      actionBtn = currentRole==='owner'
+        ?`<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <div class="sold-badge">✓ Sold</div>
+            <button onclick="openEditModal('${item.id}')" style="display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:9px;border:none;cursor:pointer;background:#1A1610;color:#9A8F78;font-size:11px;font-weight:600;white-space:nowrap;">✏️ Edit</button>
+          </div>`
+        :'<div class="sold-badge">✓ Sold</div>';
+    }
+
+    let histExtra='';
+    if(currentView==='history'&&item.status==='out'&&item.sale){
+      histExtra=`<div class="divider"></div>
+      <div style="font-size:12px;color:#C9BD9F;margin-top:8px;">↙ Aaya: ${fmtDate(item.dateIn)} · ${fmtMoney(item.purchasePrice)}</div>
+      <div style="font-size:12px;color:#C9BD9F;margin-top:5px;">↗ Becha: ${fmtDate(item.sale.dateOut)} · ${fmtMoney(item.sale.price)}${item.sale.customerName?' · '+item.sale.customerName+(item.sale.customerPhone?' ('+item.sale.customerPhone+')':''):''}</div>`;
+    }
+
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:5px;">
+            <span style="font-size:14.5px;font-weight:700;">${item.model}</span>
+            ${typeBadge}${ptaBadge}${accBadge}
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">${specBadge}</div>
+          <div class="mono" style="font-size:11.5px;color:#9A8F78;margin-bottom:7px;">${imeiLine}</div>
+          <div style="display:flex;gap:10px;font-size:11.5px;color:#9A8F78;flex-wrap:wrap;">
+            <span>📅 ${fmtDate(item.dateIn)}</span>${priceInfo}
+          </div>
+        </div>
+        <div style="margin-left:8px;">${actionBtn}</div>
+      </div>${histExtra}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  ADD FORM HELPERS
+// ============================================================
+function setType(t){
+  selType=t;
+  document.getElementById('typeUsed').classList.toggle('active',t==='used');
+  document.getElementById('typeBox').classList.toggle('active',t==='box pack');
+  document.getElementById('accSection').style.display=t==='used'?'block':'none';
+}
+function setPta(v){
+  selPta=v;
+  document.getElementById('ptaYes').classList.toggle('active',v==='pta');
+  document.getElementById('ptaNo').classList.toggle('active',v==='non-pta');
+}
+function toggleAcc(v){
+  selAcc = selAcc===v?'':v;
+  ['boxCharger','box','charger','noAcc'].forEach(k=>{
+    const el=document.getElementById('acc'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.classList.toggle('active',selAcc===k);
+  });
+}
+function setSpec(type, val){
+  if(type==='ram'){
+    selRam = selRam===val?'':val;
+    document.querySelectorAll('#ramWrap .toggle').forEach(b=>{
+      const bVal=b.getAttribute('data-val');
+      b.classList.toggle('active', bVal===val && selRam===val);
+    });
+  } else {
+    selStorage = selStorage===val?'':val;
+    document.querySelectorAll('#storageWrap .toggle').forEach(b=>{
+      const bVal=b.getAttribute('data-val');
+      b.classList.toggle('active', bVal===val && selStorage===val);
+    });
+  }
+}
+function setBrand(val){
+  selBrand = selBrand===val?'':val;
+  document.querySelectorAll('#brandWrap .toggle').forEach(b=>{
+    const bVal=b.getAttribute('data-val');
+    b.classList.toggle('active', bVal===val && selBrand===val);
+  });
+  const otherInput=document.getElementById('brandOtherInput');
+  otherInput.style.display = (selBrand==='other') ? 'block' : 'none';
+  if(selBrand!=='other') otherInput.value='';
+}
+
+function resetAddForm(){
+  ['newImei1','newImei2','newModel','newPurchasePrice','newSellPrice','brandOtherInput'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  selType='used'; selPta='pta'; selAcc=''; selRam=''; selStorage=''; selBrand='';
+  setType('used'); setPta('pta');
+  document.querySelectorAll('.toggle').forEach(b=>b.classList.remove('active'));
+  document.getElementById('typeUsed').classList.add('active');
+  document.getElementById('ptaYes').classList.add('active');
+  document.getElementById('brandOtherInput').style.display='none';
+}
+
+function openAddModal(){
+  if(currentRole!=='owner'){ showToast('Sirf owner add kar sakta hai','error'); return; }
+  resetAddForm();
+  document.getElementById('addModal').style.display='flex';
+}
+function closeAddModal(){ document.getElementById('addModal').style.display='none'; }
+
+function doAddPhone(){
+  const imei1=document.getElementById('newImei1').value.trim();
+  const imei2=document.getElementById('newImei2').value.trim();
+  const modelRaw=document.getElementById('newModel').value.trim();
+  const brandFinal = selBrand==='other' ? document.getElementById('brandOtherInput').value.trim() : selBrand;
+  const fullModel = brandFinal && modelRaw ? brandFinal+' '+modelRaw : (brandFinal||modelRaw);
+  const pPrice=document.getElementById('newPurchasePrice').value.trim();
+  const sPrice=document.getElementById('newSellPrice').value.trim();
+  if(!imei1||!fullModel||!pPrice){ showToast('IMEI 1, Brand/Model aur Purchase price zaroori hain','error'); return; }
+  if(imei1.length!==15){ showToast('IMEI 1 exactly 15 anka ka hona chahiye','error'); return; }
+  if(stock.some(p=>p.imei1===imei1&&p.status==='in')){ showToast('Ye IMEI already stock mein hai','error'); return; }
+  stock.unshift({
+    id:'ph_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    imei1, imei2, model:fullModel, brand:brandFinal, type:selType, pta:selPta,
+    acc:selType==='used'?selAcc:'',
+    ram:selRam, storage:selStorage,
+    purchasePrice:pPrice, sellPrice:sPrice,
+    dateIn:new Date().toISOString(), status:'in', sale:null
+  });
+  saveStock(); updateStats(); renderList();
+  closeAddModal();
+  showToast('Mobile stock mein add ho gaya ✓');
+}
+
+// ============================================================
+//  SELL
+// ============================================================
+function openSellModal(id){
+  if(currentRole!=='owner'){ showToast('Sirf owner sell mark kar sakta hai','error'); return; }
+  sellTarget=stock.find(p=>p.id===id);
+  if(!sellTarget) return;
+  document.getElementById('sellPhoneInfo').textContent=`${sellTarget.model} · ${sellTarget.imei1}`;
+  document.getElementById('sellPrice').value=sellTarget.sellPrice||'';
+  document.getElementById('sellCustomerName').value='';
+  document.getElementById('sellCustomerPhone').value='';
+  document.getElementById('sellModal').style.display='flex';
+}
+function closeSellModal(){ document.getElementById('sellModal').style.display='none'; sellTarget=null; }
+function doSell(){
+  const price=document.getElementById('sellPrice').value.trim();
+  if(!price){ showToast('Sale price likhna zaroori hai','error'); return; }
+  const idx=stock.findIndex(p=>p.id===sellTarget.id);
+  stock[idx].status='out';
+  stock[idx].sale={
+    price,
+    customerName:document.getElementById('sellCustomerName').value.trim(),
+    customerPhone:document.getElementById('sellCustomerPhone').value.trim(),
+    dateOut:new Date().toISOString()
+  };
+  saveStock(); updateStats(); renderList();
+  closeSellModal();
+  showToast('Mobile sold mark ho gaya ✓');
+}
+
+// ============================================================
+//  SHARE
+// ============================================================
+function openShare(){
+  const inS=stock.filter(p=>p.status==='in');
+  let txt='*ZEE MOBILE — Current Stock List*\nTareekh: '+fmtDate(new Date().toISOString())+'\n\n';
+  if(!inS.length){ txt+='Abhi stock mein koi mobile nahi hai.'; }
+  else {
+    txt+=inS.map((p,i)=>{
+      const acc=p.type==='used'&&p.acc?` [${ACC_MAP[p.acc]||p.acc}]`:'';
+      const spec=[p.ram,p.storage].filter(Boolean).join('/');
+      const sp=p.sellPrice?` → ${fmtMoney(p.sellPrice)}`:'';
+      return `${i+1}. ${p.model}${spec?' ('+spec+')':''} [${p.type==='used'?'Used':'Box Pack'}${acc}, ${p.pta==='pta'?'PTA':'Non-PTA'}]\n   Kimat: ${fmtMoney(p.purchasePrice)}${sp}\n   IMEI: ${p.imei1}${p.imei2?' / '+p.imei2:''}`;
+    }).join('\n\n');
+    const total=inS.reduce((s,p)=>s+(Number(p.purchasePrice)||0),0);
+    txt+=`\n\nTotal items: ${inS.length}\nTotal stock kimat: ${fmtMoney(total)}`;
+  }
+  document.getElementById('sharePreview').textContent=txt;
+  document.getElementById('shareModal').style.display='flex';
+}
+function closeShare(){ document.getElementById('shareModal').style.display='none'; }
+async function doShare(){
+  const text=document.getElementById('sharePreview').textContent;
+  if(navigator.share){ try{ await navigator.share({title:'ZEE MOBILE Stock',text}); closeShare(); return; }catch(e){} }
+  try{ await navigator.clipboard.writeText(text); showToast('Copy ho gayi, paste karein!'); }
+  catch(e){ showToast('Share nahi hua','error'); }
+  closeShare();
+}
+
+// ============================================================
+//  BARCODE SCANNER – real-time continuous
+// ============================================================
+async function openScan(target){
+  scanTarget=target;
+  document.getElementById('scanOverlay').style.display='flex';
+  document.getElementById('scanStatus').textContent='Camera shuru ho raha hai...';
+
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} }
+    });
+    const vid=document.getElementById('scanVideo');
+    vid.srcObject=scanStream;
+    await vid.play();
+    document.getElementById('scanStatus').textContent='Scanning... barcode frame mein lao';
+    startContinuousScan();
+  } catch(err){
+    document.getElementById('scanStatus').textContent='Camera permission nahi mili';
+    showToast('Camera allow karein — browser settings mein','error');
+  }
+}
+
+function startContinuousScan(){
+  // Try BarcodeDetector API (Chrome Android 83+)
+  if('BarcodeDetector' in window){
+    try{
+      barcodeDetector = new BarcodeDetector({
+        formats:['code_128','code_39','ean_13','ean_8','upc_a','upc_e','qr_code','data_matrix','itf']
+      });
+      scanInterval = setInterval(async()=>{
+        const vid=document.getElementById('scanVideo');
+        if(!vid||vid.readyState<2) return;
+        try{
+          const codes=await barcodeDetector.detect(vid);
+          if(codes.length>0){
+            const raw=codes[0].rawValue;
+            const digits=raw.replace(/\D/g,'');
+            // IMEI is exactly 15 digits
+            if(digits.length>=13){
+              applyScanResult(digits.slice(0,15));
+            }
+          }
+        }catch(e){}
+      }, 400);
+    }catch(e){ showScanFallback(); }
+  } else {
+    showScanFallback();
+  }
+}
+
+function showScanFallback(){
+  document.getElementById('scanStatus').textContent='Auto-scan support nahi — IMEI manually likhein';
+}
+
+function applyScanResult(val){
+  clearInterval(scanInterval);
+  document.getElementById('scanStatus').textContent='✓ IMEI mil gaya: '+val;
+  setTimeout(()=>{
+    if(scanTarget==='imei1') document.getElementById('newImei1').value=val;
+    else document.getElementById('newImei2').value=val;
+    closeScan();
+    showToast('IMEI scan ho gaya: '+val+' ✓');
+  },600);
+}
+
+function closeScan(){
+  clearInterval(scanInterval);
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  document.getElementById('scanOverlay').style.display='none';
+}
+
+function manualScanDone(){
+  closeScan();
+  // Focus the correct IMEI field
+  setTimeout(()=>{
+    const el=document.getElementById(scanTarget==='imei1'?'newImei1':'newImei2');
+    if(el){ el.focus(); el.select(); }
+  },200);
+}
+
+// ============================================================
+//  SETTINGS / PASSWORD CHANGE
+// ============================================================
+function openSettings(){
+  document.getElementById('settingsCurrentUser').textContent = currentUsername;
+  document.getElementById('curPassInput').value='';
+  document.getElementById('newPassInput').value='';
+  document.getElementById('confirmPassInput').value='';
+  document.getElementById('settingsError').style.display='none';
+  document.getElementById('settingsSuccess').style.display='none';
+  const gStatus = document.getElementById('settingsGoogleStatus');
+  gStatus.textContent = googleUserEmail ? `Connected: ${googleUserEmail}` : 'Connected nahi hai — login screen se "Continue with Google" use karein';
+  gStatus.style.color = googleUserEmail ? '#34D399' : '#9A8F78';
+  document.getElementById('settingsModal').style.display='flex';
+}
+function closeSettings(){ document.getElementById('settingsModal').style.display='none'; }
+function changePassword(){
+  const cur=document.getElementById('curPassInput').value;
+  const np=document.getElementById('newPassInput').value;
+  const cp=document.getElementById('confirmPassInput').value;
+  const errEl=document.getElementById('settingsError');
+  const okEl=document.getElementById('settingsSuccess');
+  errEl.style.display='none'; okEl.style.display='none';
+  if(cur!==CREDS[currentUsername]){ errEl.textContent='Current password ghalat hai'; errEl.style.display='block'; return; }
+  if(np.length<4){ errEl.textContent='Naya password kam az kam 4 anka ka ho'; errEl.style.display='block'; return; }
+  if(np!==cp){ errEl.textContent='Dono naye password match nahi karte'; errEl.style.display='block'; return; }
+  CREDS[currentUsername]=np;
+  saveCreds();
+  okEl.textContent='Password update ho gaya ✓';
+  okEl.style.display='block';
+  showToast('Password successfully change ho gaya');
+  setTimeout(closeSettings, 1200);
+}
+
+// ============================================================
+//  BACKUP — EXPORT / IMPORT
+// ============================================================
+function exportBackup(){
+  const backup = {
+    app:'ZEE_MOBILE_BACKUP',
+    version:1,
+    exportedAt:new Date().toISOString(),
+    stock: stock
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `ZeeMobile-Backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const msg=document.getElementById('backupMsg');
+  msg.style.color='#34D399';
+  msg.textContent='✓ Backup file download ho gayi — WhatsApp/Drive se naye phone bhej dein';
+  msg.style.display='block';
+  showToast('Backup file download ho gayi ✓');
+}
+
+function importBackup(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const msg=document.getElementById('backupMsg');
+    try{
+      const data = JSON.parse(e.target.result);
+      if(data.app!=='ZEE_MOBILE_BACKUP' || !Array.isArray(data.stock)){
+        msg.style.color='#F87171';
+        msg.textContent='✕ Ye sahi ZEE MOBILE backup file nahi hai';
+        msg.style.display='block';
+        return;
+      }
+      const importedCount = data.stock.length;
+      const existingCount = stock.length;
+      const proceed = confirm(`Backup mein ${importedCount} mobiles hain. Aap ke paas abhi ${existingCount} mobiles hain.\n\nOK = Backup wala data ADD ho jayega (merge)\nCancel = kuch nahi hoga`);
+      if(!proceed) return;
+      // Merge: avoid duplicate IDs
+      const existingIds = new Set(stock.map(p=>p.id));
+      const newItems = data.stock.filter(p=>!existingIds.has(p.id));
+      stock = [...newItems, ...stock];
+      saveStock(); updateStats(); renderList();
+      msg.style.color='#34D399';
+      msg.textContent=`✓ ${newItems.length} mobiles import ho gaye`;
+      msg.style.display='block';
+      showToast(`Backup import ho gaya — ${newItems.length} mobiles add hue`);
+    } catch(err){
+      msg.style.color='#F87171';
+      msg.textContent='✕ File parhne mein masla hua, sahi backup file chunein';
+      msg.style.display='block';
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================
+//  EDIT PHONE
+// ============================================================
+let editTarget=null, editSelType='used', editSelPta='pta', editSelAcc='', editSelRam='', editSelStorage='', editSelBrand='';
+
+function openEditModal(id){
+  if(currentRole!=='owner'){ showToast('Sirf owner edit kar sakta hai','error'); return; }
+  editTarget=stock.find(p=>p.id===id);
+  if(!editTarget) return;
+
+  document.getElementById('editImei1').value=editTarget.imei1||'';
+  document.getElementById('editImei2').value=editTarget.imei2||'';
+
+  // Brand detection
+  const knownBrands=['Apple','Samsung','Tecno','Infinix','Itel'];
+  const savedBrand=editTarget.brand||'';
+  document.getElementById('editBrandOtherInput').style.display='none';
+  document.getElementById('editBrandOtherInput').value='';
+  if(knownBrands.includes(savedBrand)){
+    editSelBrand=savedBrand;
+    document.getElementById('editModelInput').value = editTarget.model.replace(savedBrand,'').trim();
+  } else if(savedBrand){
+    editSelBrand='other';
+    document.getElementById('editBrandOtherInput').style.display='block';
+    document.getElementById('editBrandOtherInput').value=savedBrand;
+    document.getElementById('editModelInput').value = editTarget.model.replace(savedBrand,'').trim();
+  } else {
+    editSelBrand='';
+    document.getElementById('editModelInput').value = editTarget.model||'';
+  }
+  document.querySelectorAll('#editBrandWrap .toggle').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('data-val')===editSelBrand);
+  });
+
+  editSelType = editTarget.type||'used';
+  setEditType(editSelType);
+  document.getElementById('editAccSection').style.display = editSelType==='used'?'block':'none';
+
+  editSelAcc = editTarget.acc||'';
+  ['boxCharger','box','charger','noAcc'].forEach(k=>{
+    const el=document.getElementById('editAcc'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.classList.toggle('active', editSelAcc===k);
+  });
+
+  editSelRam=editTarget.ram||'';
+  editSelStorage=editTarget.storage||'';
+  document.querySelectorAll('#editRamWrap .toggle').forEach(b=>b.classList.toggle('active', b.getAttribute('data-val')===editSelRam));
+  document.querySelectorAll('#editStorageWrap .toggle').forEach(b=>b.classList.toggle('active', b.getAttribute('data-val')===editSelStorage));
+
+  editSelPta=editTarget.pta||'pta';
+  setEditPta(editSelPta);
+
+  document.getElementById('editPurchasePrice').value=editTarget.purchasePrice||'';
+  document.getElementById('editSellPrice').value=editTarget.sellPrice||'';
+
+  document.getElementById('editModal').style.display='flex';
+}
+function closeEditModal(){ document.getElementById('editModal').style.display='none'; editTarget=null; }
+
+function setEditType(t){
+  editSelType=t;
+  document.getElementById('editTypeUsed').classList.toggle('active',t==='used');
+  document.getElementById('editTypeBox').classList.toggle('active',t==='box pack');
+  document.getElementById('editAccSection').style.display=t==='used'?'block':'none';
+}
+function setEditPta(v){
+  editSelPta=v;
+  document.getElementById('editPtaYes').classList.toggle('active',v==='pta');
+  document.getElementById('editPtaNo').classList.toggle('active',v==='non-pta');
+}
+function toggleEditAcc(v){
+  editSelAcc = editSelAcc===v?'':v;
+  ['boxCharger','box','charger','noAcc'].forEach(k=>{
+    const el=document.getElementById('editAcc'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.classList.toggle('active', editSelAcc===k);
+  });
+}
+function setEditSpec(type, val){
+  if(type==='ram'){
+    editSelRam = editSelRam===val?'':val;
+    document.querySelectorAll('#editRamWrap .toggle').forEach(b=>b.classList.toggle('active', b.getAttribute('data-val')===val && editSelRam===val));
+  } else {
+    editSelStorage = editSelStorage===val?'':val;
+    document.querySelectorAll('#editStorageWrap .toggle').forEach(b=>b.classList.toggle('active', b.getAttribute('data-val')===val && editSelStorage===val));
+  }
+}
+function setEditBrand(val){
+  editSelBrand = editSelBrand===val?'':val;
+  document.querySelectorAll('#editBrandWrap .toggle').forEach(b=>b.classList.toggle('active', b.getAttribute('data-val')===val && editSelBrand===val));
+  const otherInput=document.getElementById('editBrandOtherInput');
+  otherInput.style.display = (editSelBrand==='other') ? 'block' : 'none';
+  if(editSelBrand!=='other') otherInput.value='';
+}
+
+function saveEditPhone(){
+  if(!editTarget) return;
+  const imei1=document.getElementById('editImei1').value.trim();
+  const imei2=document.getElementById('editImei2').value.trim();
+  const modelRaw=document.getElementById('editModelInput').value.trim();
+  const brandFinal = editSelBrand==='other' ? document.getElementById('editBrandOtherInput').value.trim() : editSelBrand;
+  const fullModel = brandFinal && modelRaw ? brandFinal+' '+modelRaw : (brandFinal||modelRaw);
+  const pPrice=document.getElementById('editPurchasePrice').value.trim();
+  const sPrice=document.getElementById('editSellPrice').value.trim();
+
+  if(!imei1||!fullModel||!pPrice){ showToast('IMEI 1, Brand/Model aur Purchase price zaroori hain','error'); return; }
+  if(imei1.length!==15){ showToast('IMEI 1 exactly 15 anka ka hona chahiye','error'); return; }
+  if(stock.some(p=>p.id!==editTarget.id && p.imei1===imei1 && p.status==='in')){ showToast('Ye IMEI kisi aur stock item mein already hai','error'); return; }
+
+  const idx=stock.findIndex(p=>p.id===editTarget.id);
+  if(idx===-1) return;
+  stock[idx] = {
+    ...stock[idx],
+    imei1, imei2, model:fullModel, brand:brandFinal,
+    type:editSelType, pta:editSelPta,
+    acc: editSelType==='used' ? editSelAcc : '',
+    ram: editSelRam, storage: editSelStorage,
+    purchasePrice: pPrice, sellPrice: sPrice
+  };
+  saveStock(); updateStats(); renderList();
+  closeEditModal();
+  showToast('Mobile details update ho gayi ✓');
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  t.style.background=type==='error'?'#2A1412':'#1C1709';
+  t.style.border='1px solid '+(type==='error'?'#5C2530':'#4D3E18');
+  t.style.color=type==='error'?'#F87171':'#E8C674';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ t.style.display='none'; },3000);
+}
+</script>
+</body>
+</html>
